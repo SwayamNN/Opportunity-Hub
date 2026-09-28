@@ -1,0 +1,67 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Represents a student or university account with completely isolated profile data.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "name": { "type": "string", "description": "User full name or representative name" },
+        "displayName": { "type": "string", "description": "Display name of the user" },
+        "email": { "type": "string", "format": "email", "description": "User email address" },
+        "role": { "type": "string", "enum": ["student", "university"], "description": "User role: student or university" },
+        "createdAt": { "type": "string", "description": "ISO timestamp of account creation" },
+        "updatedAt": { "type": "string", "description": "ISO timestamp of last profile update" },
+        "organizationName": { "type": "string", "description": "University, college, or institution name" },
+        "degree": { "type": "string", "description": "Degree or program of study for students" },
+        "gradYear": { "type": "string", "description": "Graduation year for students" },
+        "department": { "type": "string", "description": "Department or faculty for university representatives" },
+        "interests": { "type": "array", "description": "List of student career/academic domain interests" },
+        "bookmarkedOpportunities": { "type": "array", "description": "List of opportunity IDs saved by the student" },
+        "appliedOpportunities": { "type": "array", "description": "List of opportunity IDs applied to by the student" }
+      },
+      "required": ["uid", "name", "email", "role", "createdAt"]
+    },
+    "Opportunity": {
+      "title": "Opportunity",
+      "description": "Represents an opportunity posted by a university or institution.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Title of the opportunity" },
+        "organization": { "type": "string", "description": "Hosting organization or university" },
+        "category": { 
+          "type": "string", 
+          "enum": ["Hackathon", "Internship", "Workshop", "Competition", "Scholarship", "Fellowship", "Other"],
+          "description": "Category (Hackathon, Internship, Workshop, Competition, Scholarship, Fellowship, Other)" 
+        },
+        "description": { "type": "string", "description": "Description of the opportunity" },
+        "eligibility": { "type": "string", "description": "Eligibility criteria summary" },
+        "deadline": { "type": "string", "description": "Application deadline (YYYY-MM-DD)" },
+        "mode": { 
+          "type": "string", 
+          "enum": ["Online", "Offline", "Hybrid", "Remote", "On-Site"],
+          "description": "Work/participation mode: Online, Offline, or Hybrid" 
+        },
+        "location": { "type": "string", "description": "Location or campus venue" },
+        "skills": { "type": "array", "description": "Required or recommended skills" },
+        "applicationUrl": { "type": "string", "description": "External application portal URL" },
+        "applicationLink": { "type": "string", "description": "External application portal URL" },
+        "createdBy": { "type": "string", "description": "UID of the university user who posted it" },
+        "createdAt": { "type": "string", "description": "ISO timestamp when the opportunity was posted" },
+        "updatedAt": { "type": "string", "description": "ISO timestamp when the opportunity was last updated" },
+        "published": { "type": "boolean", "description": "Whether the opportunity is published and visible to students" }
+      },
+      "required": ["title", "organization", "category", "description", "eligibility", "deadline", "mode", "location", "skills", "applicationUrl", "createdBy", "createdAt", "published"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile collection storing student and university accounts."
+    },
+    "/opportunities/{opportunityId}": {
+      "schema": "Opportunity",
+      "description": "Collection of published opportunities created and managed by universities."
+    }
+  }
+}

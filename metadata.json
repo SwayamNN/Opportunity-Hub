@@ -1,0 +1,6 @@
+{
+  "name": "Opportunity Hub",
+  "description": "Premium opportunity discovery platform for college students: hackathons, internships, competitions, scholarships, and fellowships.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

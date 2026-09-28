@@ -1,0 +1,73 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isUniversity() {
+      return isAuthenticated() && (
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'university'
+      );
+    }
+
+    function isStudent() {
+      return isAuthenticated() && (
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'student'
+      );
+    }
+
+    // User profiles: strictly request.auth.uid == userId
+    // A user can access their own users/{uid} document only when request.auth.uid == uid.
+    // A user cannot access another user's private profile.
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId)
+        && request.resource.data.keys().hasAll(['uid', 'email', 'role', 'name', 'createdAt'])
+        && request.resource.data.role in ['student', 'university']
+        && request.resource.data.uid == userId;
+      allow update: if isOwner(userId)
+        && request.resource.data.uid == userId
+        && request.resource.data.role == resource.data.role;
+      allow delete: if false;
+    }
+
+    // Opportunities collection
+    match /opportunities/{opportunityId} {
+      // Authenticated users can read published opportunities; creators can also read their own opportunities (drafts & published)
+      allow read: if isAuthenticated() && (
+        resource.data.published == true || resource.data.createdBy == request.auth.uid
+      );
+
+      // Authenticated universities can create opportunities; createdBy must equal caller's Firebase UID
+      allow create: if isAuthenticated()
+        && isUniversity()
+        && request.resource.data.createdBy == request.auth.uid;
+
+      // Only the university that created the opportunity can update it, and createdBy is immutable
+      allow update: if isAuthenticated()
+        && isUniversity()
+        && resource.data.createdBy == request.auth.uid
+        && request.resource.data.createdBy == resource.data.createdBy;
+
+      // Only the university that created the opportunity can delete it
+      allow delete: if isAuthenticated()
+        && isUniversity()
+        && resource.data.createdBy == request.auth.uid;
+    }
+
+    // Connectivity test document
+    match /test/{docId} {
+      allow read, write: if true;
+    }
+  }
+}
+
+
